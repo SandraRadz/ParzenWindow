@@ -1,3 +1,3 @@
 # ParzenWindow
 machine learning
-Practice work 2
+Homework 2
