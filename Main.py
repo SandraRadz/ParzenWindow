@@ -55,11 +55,40 @@ def maxIndex(data):
     max = data[0]
     maxIndex = 0
     for i in range(len(data)):
-        if data[i] > max:
+        if data[i] >= max:
             maxIndex = i
             max = data[i]
     return maxIndex
 
+def rectangulaCore(r):
+    if r<1:
+        return 1
+    return 0
+
+
+def triangularCore(r):
+    if r<1:
+        return 1 - r
+    return 0
+
+
+def squareCore(r):
+    if r<1:
+        return (1 - r) ** 2
+    return 0
+
+
+def superSquareCore(r):
+    if r<1:
+        return (1 - (r) ** 2) ** 2
+    return 0
+
+
+def gaussCore(r):
+    e = 2.71828
+    if r:
+        return e ** (-2 * (r) ** 2)
+    return 0
 
 # testData without class
 def calculateClass(trainData, testData, classNum, windowsize, coreType):
@@ -67,22 +96,9 @@ def calculateClass(trainData, testData, classNum, windowsize, coreType):
     for i in range(len(testData)):
         stat = [0 for i in range(classNum)]
         nearestpoints = findNearestPoints(testData[i], trainData, windowsize)
-        if coreType==0:
-            for j in range(len(nearestpoints)):
-                stat[nearestpoints[j][1]] += 1
-        elif coreType == 1:
-            for j in range(len(nearestpoints)):
-                stat[nearestpoints[j][1]] += (1-nearestpoints[j][0]/windowsize)
-        elif coreType == 2:
-            for j in range(len(nearestpoints)):
-                stat[nearestpoints[j][1]] += (1-(nearestpoints[j][0]/windowsize)**2)
-        elif coreType == 3:
-            for j in range(len(nearestpoints)):
-                stat[nearestpoints[j][1]] += ((1-(nearestpoints[j][0]/windowsize)**2)**2)
-        else:
-            for j in range(len(nearestpoints)):
-                e=2.71828
-                stat[nearestpoints[j][1]] += e**(-2*(nearestpoints[j][0]/windowsize)**2)
+        for j in range(len(nearestpoints)):
+            r = nearestpoints[j][0]/windowsize
+            stat[nearestpoints[j][1]] += coreType(r)
         testWithLabels.append([testData[i], maxIndex(stat)])
     return testWithLabels
 
@@ -109,14 +125,7 @@ _sizey = 3
 _windowSize = 1.5
 _maxsize = _sizex
 _method = 4
-methods=["rectangular core", "triangular core", "square core", "super square core", "Gauss core"]
-
-# method 0 - rectangular core
-# method 1 - triangular core
-# method 2 - square core
-# method 3 - super square core
-# method 4 - Gauss core
-
+methods = [rectangulaCore, triangularCore, squareCore, superSquareCore, gaussCore]
 
 # create data
 data = generateData(_classNum, _pointNum, _spread, _sizex, _sizey)
@@ -126,7 +135,7 @@ testData = [[testWithLabel[i][0][0], testWithLabel[i][0][1]] for i in range(len(
 res = []
 reshelper = []
 for i in range(5):
-    tws = trainWindowSize(trainData, testWithLabel, testData, _classNum, _maxsize, i)
+    tws = trainWindowSize(trainData, testWithLabel, testData, _classNum, _maxsize, methods[i])
     res.append([tws[0], tws[1], i])
     reshelper.append(tws[1])
 maxIndex(reshelper)
@@ -136,7 +145,7 @@ windowSize = res[maxIndex(reshelper)]
 pSize = res[maxIndex(reshelper)][0]
 acc = res[maxIndex(reshelper)][1]
 mNum = res[maxIndex(reshelper)][2]
-res1 = calculateClass(trainData, testData, _classNum, pSize, mNum)
+res1 = calculateClass(trainData, testData, _classNum, pSize, methods[mNum])
 print("best window size:", pSize)
 print("best method:", methods[mNum])
 print("accuracy:", acc)
